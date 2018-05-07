@@ -25,10 +25,17 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	List<User> findAllUsersWithNoScanDevices();
 	
 	
+	@Query(value = "SELECT * FROM m_user WHERE m_user.user_id IN"
+			+ "(SELECT m_scan_devices.user_id FROM m_scan_devices  WHERE"
+			+ " user_id NOT IN (SELECT user_id FROM m_device))", nativeQuery = true)
+	List<User> findAllUsersWithscanDevicesNotInDevice();
+	
+	
 	@Transactional
 	@Modifying
 	@Query("UPDATE User SET userIsUsed=0  WHERE user_id=:userId")
 	int deleteUser(@Param("userId")int userId);
-
+	
+	
 
 }

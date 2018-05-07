@@ -15,11 +15,14 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
 	Device findByDevMacAndDevType(String mac, int type);
 
 	List<Device> findByUserId(int userId);
+	
+	Device findByDevId(int id);
+
 
 	@Transactional
 	@Modifying
-	@Query("UPDATE Device SET devIsUsed=0  WHERE dev_id=:devId")
-	int deleteDevice(@Param("devId")int devId);
+	@Query("UPDATE Device SET devIsUsed=0  WHERE devMac=:devMac")
+	int deleteDeviceByMac(@Param("devMac")String devMac);
 
 
 

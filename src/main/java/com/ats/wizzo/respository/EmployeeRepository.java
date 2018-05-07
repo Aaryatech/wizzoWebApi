@@ -1,5 +1,7 @@
 package com.ats.wizzo.respository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +22,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer>{
 	@Query("UPDATE Employee SET isUsed=0  WHERE emp_id=:empId")
 	int deleteEmployee(@Param("empId")int empId);
 
+	List<Employee> findByIsUsed(int isUsed);
 
 }

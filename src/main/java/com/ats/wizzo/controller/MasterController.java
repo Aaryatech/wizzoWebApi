@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ats.wizzo.model.BuyNow;
+import com.ats.wizzo.model.DashboardCount;
+import com.ats.wizzo.model.Device;
 import com.ats.wizzo.model.DeviceByUserId;
 import com.ats.wizzo.model.Employee;
 import com.ats.wizzo.model.Enquiry;
@@ -22,7 +24,9 @@ import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Support;
 import com.ats.wizzo.model.User;
 import com.ats.wizzo.respository.BuyNowRepository;
+import com.ats.wizzo.respository.CountUsersRepository;
 import com.ats.wizzo.respository.DeviceByUserIdRepository;
+import com.ats.wizzo.respository.DeviceConuntRepository;
 import com.ats.wizzo.respository.DeviceRepository;
 import com.ats.wizzo.respository.EmployeeRepository;
 import com.ats.wizzo.respository.EnquiryRepository;
@@ -31,6 +35,8 @@ import com.ats.wizzo.respository.RoomRepository;
 import com.ats.wizzo.respository.ScanDeviceRepository;
 import com.ats.wizzo.respository.SchedulerRepository;
 import com.ats.wizzo.respository.SupportRepository;
+import com.ats.wizzo.respository.TotalNewOrdersRepository;
+import com.ats.wizzo.respository.TotalPendingIssuesRepository;
 import com.ats.wizzo.respository.UserRepository;
 
 @RestController
@@ -68,6 +74,19 @@ public class MasterController {
 
 	@Autowired
 	RoomRepository roomRepository;
+
+	@Autowired
+	CountUsersRepository countUsersRepository;
+
+	@Autowired
+	TotalNewOrdersRepository totalNewOrdersRepository;
+
+	@Autowired
+	TotalPendingIssuesRepository totalPendingIssuesRepository;
+
+	@Autowired
+	DeviceConuntRepository deviceConuntRepository;
+
 	// ----------------------------------------Enquiry------------------------------------
 
 	@RequestMapping(value = { "/saveEnquiry" }, method = RequestMethod.POST)
@@ -233,14 +252,14 @@ public class MasterController {
 
 	}
 
-	@RequestMapping(value = { "/getAllUserList" }, method = RequestMethod.GET)
-	public @ResponseBody List<User> getAllUserList() {
+	@RequestMapping(value = { "/getAllUserListByIsUsed" }, method = RequestMethod.GET)
+	public @ResponseBody List<User> getAllUserListByIsUsed() {
 
 		List<User> userList = new ArrayList<User>();
 
 		try {
 
-			userList = userRepository.findAll();
+			userList = userRepository.findAllByUserIsUsed(1);
 
 		} catch (Exception e) {
 
@@ -341,7 +360,7 @@ public class MasterController {
 
 	}
 
-	// ----------------------------------------Employee----------------------------------
+	// --------------------------Employee----------------------------------
 
 	@RequestMapping(value = { "/saveEmployee" }, method = RequestMethod.POST)
 	public @ResponseBody Employee saveEmployee(@RequestBody Employee employee) {
@@ -393,7 +412,7 @@ public class MasterController {
 
 		try {
 
-			empList = employeeRepository.findAll();
+			empList = employeeRepository.findByIsUsed(1);
 
 		} catch (Exception e) {
 
@@ -403,8 +422,7 @@ public class MasterController {
 		return empList;
 
 	}
-	
-	
+
 	// ---------------------------Employee Delete Action------------
 	@RequestMapping(value = { "/deleteEmployee" }, method = RequestMethod.POST)
 	public @ResponseBody ErrorMessage deleteEmployee(@RequestParam("empId") int empId) {
@@ -435,8 +453,8 @@ public class MasterController {
 
 	// -------------------------------UnActive User------------------------------
 
-	@RequestMapping(value = { "/unActiveUser" }, method = RequestMethod.POST)
-	public @ResponseBody List<User> unActiveUser(@RequestBody User user) {
+	@RequestMapping(value = { "/unActiveUser" }, method = RequestMethod.GET)
+	public @ResponseBody List<User> unActiveUser() {
 
 		List<User> userList = new ArrayList<User>();
 
@@ -460,9 +478,10 @@ public class MasterController {
 		ErrorMessage errorMessage = new ErrorMessage();
 
 		try {
-			int delete = deviceRepository.deleteDevice(devId);
 
-			if (delete == 1) {
+			Device d = deviceRepository.findByDevId(devId);
+			int delete = deviceRepository.deleteDeviceByMac(d.getDevMac());
+			if (delete == 0) {
 				errorMessage.setError(false);
 				errorMessage.setMessage("successfully Deleted");
 			} else {
@@ -562,4 +581,57 @@ public class MasterController {
 		return errorMessage;
 
 	}
+
+	// ---------------------------- User List Need Assistance----------------
+
+	@RequestMapping(value = { "/userListNeedAssistance" }, method = RequestMethod.GET)
+	public @ResponseBody List<User> userListNeedAssistance() {
+
+		List<User> userList = new ArrayList<User>();
+
+		try {
+
+			userList = userRepository.findAllUsersWithscanDevicesNotInDevice();
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return userList;
+
+	}
+
+	// ---------------------------------Dashboard Count-------------------
+
+	@RequestMapping(value = { "/getAllCount" }, method = RequestMethod.GET)
+	public @ResponseBody DashboardCount getAllCount() {
+
+		DashboardCount count = new DashboardCount();
+
+		try {
+
+			int totalUsers = countUsersRepository.totalCountOfUsers();
+
+			int totalNewOrders = totalNewOrdersRepository.totalCountOfOredrs();
+
+			int totalIssues = totalPendingIssuesRepository.totalPendingIssues();
+
+			int totalDevices = deviceConuntRepository.totalCountOfUsers();
+			count.setTotalNoOfUsers(totalUsers);
+			count.setDeviceCount(totalDevices);
+
+			count.setTotalNewOrders(totalNewOrders);
+
+			count.setTotalPendingIssues(totalIssues);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return count;
+
+	}
+
 }

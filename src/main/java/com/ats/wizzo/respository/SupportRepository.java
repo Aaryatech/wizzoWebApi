@@ -12,4 +12,6 @@ public interface SupportRepository extends JpaRepository<Support, Integer> {
 
 	List<Support> findByAssignedTo(int assignedTo);
 
+	Support findByTokenId(int tokenId);
+
 }

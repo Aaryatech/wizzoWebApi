@@ -36,6 +36,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	@Query("UPDATE User SET userIsUsed=0  WHERE user_id=:userId")
 	int deleteUser(@Param("userId")int userId);
 	
-	
+	@Query(value = "SELECT COUNT(m_user.user_id) FROM m_user WHERE m_user.user_is_used=1"
+			+ "", nativeQuery = true)
+	Integer totalCountOfUsers();
+
 
 }

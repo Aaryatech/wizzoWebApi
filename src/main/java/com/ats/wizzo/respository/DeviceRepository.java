@@ -24,6 +24,7 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
 	@Query("UPDATE Device SET devIsUsed=0  WHERE devMac=:devMac")
 	int deleteDeviceByMac(@Param("devMac")String devMac);
 
-
+	@Query(value = " SELECT COUNT(m_device.dev_id) FROM m_device WHERE m_device.dev_is_used=1" + "", nativeQuery = true)
+	Integer totalCountOfUsers();
 
 }

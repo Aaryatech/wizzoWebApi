@@ -1,7 +1,8 @@
 package com.ats.wizzo.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import com.ats.wizzo.model.DeviceByUserId;
 import com.ats.wizzo.model.Employee;
 import com.ats.wizzo.model.Enquiry;
 import com.ats.wizzo.model.ErrorMessage;
+import com.ats.wizzo.model.GetSupportList;
 import com.ats.wizzo.model.LoginResponse;
 import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Support;
@@ -28,6 +30,7 @@ import com.ats.wizzo.respository.DeviceByUserIdRepository;
 import com.ats.wizzo.respository.DeviceRepository;
 import com.ats.wizzo.respository.EmployeeRepository;
 import com.ats.wizzo.respository.EnquiryRepository;
+import com.ats.wizzo.respository.GetSupportListRepository;
 import com.ats.wizzo.respository.OrderRepository;
 import com.ats.wizzo.respository.RoomRepository;
 import com.ats.wizzo.respository.ScanDeviceRepository;
@@ -70,18 +73,57 @@ public class MasterController {
 
 	@Autowired
 	RoomRepository roomRepository;
+	
+	@Autowired
+	GetSupportListRepository getSupportListRepository;
 
 	
 
 	// ----------------------------------------Enquiry------------------------------------
 
-	@RequestMapping(value = { "/saveEnquiry" }, method = RequestMethod.POST)
+	@RequestMapping(value = { "/saveEnquiryDirect" }, method = RequestMethod.POST)
 	public @ResponseBody Enquiry saveEmployee(@RequestBody Enquiry enquiry) {
 
 		Enquiry enq = new Enquiry();
 
 		try {
 
+			enq = enquiryRepository.saveAndFlush(enquiry);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return enq;
+
+	}
+	
+	@RequestMapping(value = { "/saveEnquiry" }, method = RequestMethod.POST)
+	public @ResponseBody Enquiry saveEmployee(@RequestParam("name") String name,@RequestParam("emailId") String emailId,@RequestParam("mobileNo") String mobileNo
+			,@RequestParam("location") String location,@RequestParam("message") String message,
+			@RequestParam("enqType") int enqType ) {
+		 
+		Enquiry enquiry = new Enquiry();
+		Enquiry enq = new Enquiry();
+
+		try {
+			System.out.println("name " + name );
+			 System.out.println("emailId " + emailId );
+			 System.out.println("mobileNo " + mobileNo );
+			 System.out.println("location " + location );
+			 System.out.println("message " + message );
+			 System.out.println("enqType " + enqType ); 
+			 SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			 Date date = new Date();
+			 
+			 enquiry.setName(name);
+			 enquiry.setEmailId(emailId);
+			 enquiry.setMobileNo(mobileNo);
+			 enquiry.setLocation(location);
+			 enquiry.setMessage(message);
+			 enquiry.setEnqType(enqType);
+			 enquiry.setEnqDatetime(sf.format(date));
 			enq = enquiryRepository.saveAndFlush(enquiry);
 
 		} catch (Exception e) {
@@ -112,9 +154,50 @@ public class MasterController {
 
 	// ------------------------------------Buy Now--------------------
 
-	@RequestMapping(value = { "/saveBuyNow" }, method = RequestMethod.POST)
+	@RequestMapping(value = { "/saveBuyNowDirect" }, method = RequestMethod.POST)
 	public @ResponseBody BuyNow saveBuyNow(@RequestBody BuyNow buyNow) {
 
+		BuyNow buy = new BuyNow();
+
+		try {
+
+			buy = buyNowRepository.saveAndFlush(buyNow);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return buy;
+
+	}
+	
+	@RequestMapping(value = { "/saveBuyNow" }, method = RequestMethod.POST)
+	public @ResponseBody BuyNow saveBuyNow(@RequestParam("name") String name,@RequestParam("emailId") String emailId,@RequestParam("address") String address
+			,@RequestParam("city") String city,@RequestParam("state") String state,@RequestParam("pincode") String pincode,
+			@RequestParam("orderQty") int orderQty) {
+		
+		 System.out.println("name " + name );
+		 System.out.println("emailId " + emailId );
+		 System.out.println("address " + address );
+		 System.out.println("city " + city );
+		 System.out.println("state " + state );
+		 System.out.println("pincode " + pincode );
+		 System.out.println("orderQty " + orderQty );
+		 
+		 SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		 Date date = new Date();
+		 
+		 BuyNow buyNow = new BuyNow();
+		 buyNow.setName(name);
+		 buyNow.setEmailId(emailId);
+		 buyNow.setAddress(address);
+		 buyNow.setCity(city);
+		 buyNow.setState(state);
+		 buyNow.setPincode(pincode);
+		 buyNow.setOrderQty(orderQty);
+		 buyNow.setOrderDatetime(sf.format(date));
+		 
 		BuyNow buy = new BuyNow();
 
 		try {
@@ -300,6 +383,65 @@ public class MasterController {
 
 		try {
 			suppport = supportRepository.findByStatus(status);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return suppport;
+
+	}
+	
+	@RequestMapping(value = { "/getSupportById" }, method = RequestMethod.POST)
+	public @ResponseBody Support getSupportById(@RequestParam("tokenId") int tokenId) {
+
+		Support suppport = new Support();
+
+		try {
+			suppport = supportRepository.findByTokenId(tokenId);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			suppport = new Support();
+
+		}
+		return suppport;
+
+	}
+	
+	@RequestMapping(value = { "/resolvedListFromSupprt" }, method = RequestMethod.GET)
+	public @ResponseBody List<GetSupportList> resolvedListFromSupprt() {
+
+		List<GetSupportList> suppport = new ArrayList<GetSupportList>();
+
+		try {
+			
+			SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+			Date date = new Date();
+			String fDate = sf.format(date) +" 00:00:00";
+			String tDate = sf.format(date) +" 23:59:59";
+			
+			suppport = getSupportListRepository.resolvedListFromSupprt(fDate,tDate);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return suppport;
+
+	}
+	
+	@RequestMapping(value = { "/pendingListFromSupprt" }, method = RequestMethod.GET)
+	public @ResponseBody List<GetSupportList> pendingListFromSupprt() {
+
+		List<GetSupportList> suppport = new ArrayList<GetSupportList>();
+
+		try {
+			 
+			suppport = getSupportListRepository.pendingListFromSupprt();
 
 		} catch (Exception e) {
 

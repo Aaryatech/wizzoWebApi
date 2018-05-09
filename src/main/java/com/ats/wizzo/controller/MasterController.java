@@ -21,6 +21,7 @@ import com.ats.wizzo.model.Employee;
 import com.ats.wizzo.model.Enquiry;
 import com.ats.wizzo.model.ErrorMessage;
 import com.ats.wizzo.model.GetSupportList;
+import com.ats.wizzo.model.GetTouch;
 import com.ats.wizzo.model.LoginResponse;
 import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Support;
@@ -31,6 +32,7 @@ import com.ats.wizzo.respository.DeviceRepository;
 import com.ats.wizzo.respository.EmployeeRepository;
 import com.ats.wizzo.respository.EnquiryRepository;
 import com.ats.wizzo.respository.GetSupportListRepository;
+import com.ats.wizzo.respository.GetTouchRepository;
 import com.ats.wizzo.respository.OrderRepository;
 import com.ats.wizzo.respository.RoomRepository;
 import com.ats.wizzo.respository.ScanDeviceRepository;
@@ -76,6 +78,9 @@ public class MasterController {
 	
 	@Autowired
 	GetSupportListRepository getSupportListRepository;
+	
+	@Autowired
+	GetTouchRepository getTouchRepository;
 
 	
 
@@ -210,6 +215,36 @@ public class MasterController {
 
 		}
 		return buy;
+
+	}
+	
+	
+	@RequestMapping(value = { "/saveGetTouch" }, method = RequestMethod.POST)
+	public @ResponseBody GetTouch saveGetTouch(@RequestParam("name") String name,@RequestParam("emailId") String emailId,
+			@RequestParam("message") String message) {
+		
+		 System.out.println("name " + name );
+		 System.out.println("emailId " + emailId );
+		 System.out.println("message " + message ); 
+		 
+	  
+		 GetTouch getTouch = new GetTouch();
+		 getTouch.setName(name);
+		 getTouch.setEmail(emailId);
+		 getTouch.setMessage(message);
+		 
+		 GetTouch touch = new GetTouch();
+
+		try {
+
+			touch = getTouchRepository.saveAndFlush(getTouch);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return touch;
 
 	}
 

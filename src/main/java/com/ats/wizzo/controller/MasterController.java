@@ -1,6 +1,7 @@
 package com.ats.wizzo.controller;
 
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ats.wizzo.common.Firebase;
+import com.ats.wizzo.model.AdminUser;
 import com.ats.wizzo.model.BuyNow;
 import com.ats.wizzo.model.DashboardCount;
 import com.ats.wizzo.model.Device;
@@ -23,9 +26,11 @@ import com.ats.wizzo.model.ErrorMessage;
 import com.ats.wizzo.model.GetSupportList;
 import com.ats.wizzo.model.GetTouch;
 import com.ats.wizzo.model.LoginResponse;
+import com.ats.wizzo.model.LoginResponseAdmin;
 import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Support;
 import com.ats.wizzo.model.User;
+import com.ats.wizzo.respository.AdminUserRepository;
 import com.ats.wizzo.respository.BuyNowRepository;
 import com.ats.wizzo.respository.DeviceByUserIdRepository;
 import com.ats.wizzo.respository.DeviceRepository;
@@ -39,9 +44,13 @@ import com.ats.wizzo.respository.ScanDeviceRepository;
 import com.ats.wizzo.respository.SchedulerRepository;
 import com.ats.wizzo.respository.SupportRepository;
 import com.ats.wizzo.respository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class MasterController {
+
+	@Autowired
+	AdminUserRepository adminUserRepository;
 
 	@Autowired
 	EnquiryRepository enquiryRepository;
@@ -75,10 +84,10 @@ public class MasterController {
 
 	@Autowired
 	RoomRepository roomRepository;
-	
+
 	@Autowired
 	GetSupportListRepository getSupportListRepository;
-	
+
 	@Autowired
 	GetTouchRepository getTouchRepository;
 
@@ -103,33 +112,54 @@ public class MasterController {
 		return enq;
 
 	}
-	
+
 	@RequestMapping(value = { "/saveEnquiry" }, method = RequestMethod.POST)
-	public @ResponseBody Enquiry saveEmployee(@RequestParam("name") String name,@RequestParam("emailId") String emailId,@RequestParam("mobileNo") String mobileNo
-			,@RequestParam("location") String location,@RequestParam("message") String message,
-			@RequestParam("enqType") int enqType ) {
-		 
+	public @ResponseBody Enquiry saveEmployee(@RequestParam("name") String name,
+			@RequestParam("emailId") String emailId, @RequestParam("mobileNo") String mobileNo,
+			@RequestParam("location") String location, @RequestParam("message") String message,
+			@RequestParam("enqType") int enqType) {
+
 		Enquiry enquiry = new Enquiry();
 		Enquiry enq = new Enquiry();
 
 		try {
-			System.out.println("name " + name );
-			 System.out.println("emailId " + emailId );
-			 System.out.println("mobileNo " + mobileNo );
-			 System.out.println("location " + location );
-			 System.out.println("message " + message );
-			 System.out.println("enqType " + enqType ); 
-			 SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			 Date date = new Date();
-			 
-			 enquiry.setName(name);
-			 enquiry.setEmailId(emailId);
-			 enquiry.setMobileNo(mobileNo);
-			 enquiry.setLocation(location);
-			 enquiry.setMessage(message);
-			 enquiry.setEnqType(enqType);
-			 enquiry.setEnqDatetime(sf.format(date));
+			System.out.println("name " + name);
+			System.out.println("emailId " + emailId);
+			System.out.println("mobileNo " + mobileNo);
+			System.out.println("location " + location);
+			System.out.println("message " + message);
+			System.out.println("enqType " + enqType);
+			SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date date = new Date();
+
+			enquiry.setName(name);
+			enquiry.setEmailId(emailId);
+			enquiry.setMobileNo(mobileNo);
+			enquiry.setLocation(location);
+			enquiry.setMessage(message);
+			enquiry.setEnqType(enqType);
+			enquiry.setEnqDatetime(sf.format(date));
 			enq = enquiryRepository.saveAndFlush(enquiry);
+
+			ObjectMapper om = new ObjectMapper();
+			String jsonStr = om.writeValueAsString(enq);
+			if (enq == null) {
+
+			} else {
+
+				List<String> tokens = adminUserRepository.findTokens();
+
+				try {
+					for (String token : tokens) {
+						if (token != null) {
+							Firebase.sendPushNotifForCommunication(token, "Wizzo_ContactUs", jsonStr, "contactUs");
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
 
 		} catch (Exception e) {
 
@@ -176,38 +206,59 @@ public class MasterController {
 		return buy;
 
 	}
-	
+
 	@RequestMapping(value = { "/saveBuyNow" }, method = RequestMethod.POST)
-	public @ResponseBody BuyNow saveBuyNow(@RequestParam("name") String name,@RequestParam("emailId") String emailId,@RequestParam("address") String address
-			,@RequestParam("city") String city,@RequestParam("state") String state,@RequestParam("pincode") String pincode,
+	public @ResponseBody BuyNow saveBuyNow(@RequestParam("name") String name, @RequestParam("emailId") String emailId,
+			@RequestParam("address") String address, @RequestParam("city") String city,
+			@RequestParam("state") String state, @RequestParam("pincode") String pincode,
 			@RequestParam("orderQty") int orderQty) {
-		
-		 System.out.println("name " + name );
-		 System.out.println("emailId " + emailId );
-		 System.out.println("address " + address );
-		 System.out.println("city " + city );
-		 System.out.println("state " + state );
-		 System.out.println("pincode " + pincode );
-		 System.out.println("orderQty " + orderQty );
-		 
-		 SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		 Date date = new Date();
-		 
-		 BuyNow buyNow = new BuyNow();
-		 buyNow.setName(name);
-		 buyNow.setEmailId(emailId);
-		 buyNow.setAddress(address);
-		 buyNow.setCity(city);
-		 buyNow.setState(state);
-		 buyNow.setPincode(pincode);
-		 buyNow.setOrderQty(orderQty);
-		 buyNow.setOrderDatetime(sf.format(date));
-		 
+
+		System.out.println("name " + name);
+		System.out.println("emailId " + emailId);
+		System.out.println("address " + address);
+		System.out.println("city " + city);
+		System.out.println("state " + state);
+		System.out.println("pincode " + pincode);
+		System.out.println("orderQty " + orderQty);
+
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = new Date();
+
+		BuyNow buyNow = new BuyNow();
+		buyNow.setName(name);
+		buyNow.setEmailId(emailId);
+		buyNow.setAddress(address);
+		buyNow.setCity(city);
+		buyNow.setState(state);
+		buyNow.setPincode(pincode);
+		buyNow.setOrderQty(orderQty);
+		buyNow.setOrderDatetime(sf.format(date));
+
 		BuyNow buy = new BuyNow();
 
 		try {
 
 			buy = buyNowRepository.saveAndFlush(buyNow);
+			
+			ObjectMapper om = new ObjectMapper();
+			String jsonStr = om.writeValueAsString(buy);
+			if (buy == null) {
+
+			} else {
+
+				List<String> tokens = adminUserRepository.findTokens();
+
+				try {
+					for (String token : tokens) {
+						if (token != null) {
+							Firebase.sendPushNotifForCommunication(token, "Wizzo_ContactUs", jsonStr, "contactUs");
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
 
 		} catch (Exception e) {
 
@@ -217,27 +268,45 @@ public class MasterController {
 		return buy;
 
 	}
-	
-	
+
 	@RequestMapping(value = { "/saveGetTouch" }, method = RequestMethod.POST)
-	public @ResponseBody GetTouch saveGetTouch(@RequestParam("name") String name,@RequestParam("emailId") String emailId,
-			@RequestParam("message") String message) {
-		
-		 System.out.println("name " + name );
-		 System.out.println("emailId " + emailId );
-		 System.out.println("message " + message ); 
-		 
-	  
-		 GetTouch getTouch = new GetTouch();
-		 getTouch.setName(name);
-		 getTouch.setEmail(emailId);
-		 getTouch.setMessage(message);
-		 
-		 GetTouch touch = new GetTouch();
+	public @ResponseBody GetTouch saveGetTouch(@RequestParam("name") String name,
+			@RequestParam("emailId") String emailId, @RequestParam("message") String message) {
+
+		System.out.println("name " + name);
+		System.out.println("emailId " + emailId);
+		System.out.println("message " + message);
+
+		GetTouch getTouch = new GetTouch();
+		getTouch.setName(name);
+		getTouch.setEmail(emailId);
+		getTouch.setMessage(message);
+
+		GetTouch touch = new GetTouch();
 
 		try {
 
 			touch = getTouchRepository.saveAndFlush(getTouch);
+			
+			ObjectMapper om = new ObjectMapper();
+			String jsonStr = om.writeValueAsString(touch);
+			if (touch == null) {
+
+			} else {
+
+				List<String> tokens = adminUserRepository.findTokens();
+
+				try {
+					for (String token : tokens) {
+						if (token != null) {
+							Firebase.sendPushNotifForCommunication(token, "Wizzo_ContactUs", jsonStr, "contactUs");
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
 
 		} catch (Exception e) {
 
@@ -427,7 +496,7 @@ public class MasterController {
 		return suppport;
 
 	}
-	
+
 	@RequestMapping(value = { "/getSupportById" }, method = RequestMethod.POST)
 	public @ResponseBody Support getSupportById(@RequestParam("tokenId") int tokenId) {
 
@@ -445,20 +514,20 @@ public class MasterController {
 		return suppport;
 
 	}
-	
+
 	@RequestMapping(value = { "/resolvedListFromSupprt" }, method = RequestMethod.GET)
 	public @ResponseBody List<GetSupportList> resolvedListFromSupprt() {
 
 		List<GetSupportList> suppport = new ArrayList<GetSupportList>();
 
 		try {
-			
+
 			SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
 			Date date = new Date();
-			String fDate = sf.format(date) +" 00:00:00";
-			String tDate = sf.format(date) +" 23:59:59";
-			
-			suppport = getSupportListRepository.resolvedListFromSupprt(fDate,tDate);
+			String fDate = sf.format(date) + " 00:00:00";
+			String tDate = sf.format(date) + " 23:59:59";
+
+			suppport = getSupportListRepository.resolvedListFromSupprt(fDate, tDate);
 
 		} catch (Exception e) {
 
@@ -468,14 +537,14 @@ public class MasterController {
 		return suppport;
 
 	}
-	
+
 	@RequestMapping(value = { "/pendingListFromSupprt" }, method = RequestMethod.GET)
 	public @ResponseBody List<GetSupportList> pendingListFromSupprt() {
 
 		List<GetSupportList> suppport = new ArrayList<GetSupportList>();
 
 		try {
-			 
+
 			suppport = getSupportListRepository.pendingListFromSupprt();
 
 		} catch (Exception e) {
@@ -796,8 +865,32 @@ public class MasterController {
 
 	}
 
+	@RequestMapping(value = { "/adminUserLogin" }, method = RequestMethod.POST)
+	public @ResponseBody LoginResponseAdmin findByUserMobileAndUserPassword(
+			@RequestParam("userMobile") String userMobile, @RequestParam("userPassword") String userPassword,
+			@RequestParam("token") String token) {
+
+		AdminUser adminUser = adminUserRepository.findByUserMobileAndUserPassword(userMobile, userPassword);
+
+		LoginResponseAdmin loginResponse = new LoginResponseAdmin();
+
+		if (adminUser == null) {
+			adminUser = new AdminUser();
+			loginResponse.setAdminUser(adminUser);
+
+			loginResponse.setError(true);
+			loginResponse.setMsg("Invalid Login Details ");
+
+		} else {
+
+			loginResponse.setAdminUser(adminUser);
+			loginResponse.setError(false);
+			loginResponse.setMsg("Login Successfully");
+
+			int isUpdated = adminUserRepository.updateToken(adminUser.getUserId(), token);
+
+		}
+
+		return loginResponse;
+	}
 }
-
-
-
-

@@ -10,6 +10,8 @@ import com.ats.wizzo.model.Room;
 public interface RoomRepository extends JpaRepository<Room, Integer>  {
 
 	List<Room> findByUserId(int userId);
+
+	List<Room> findByUserIdAndRoomIsUsed(int userId, int i);
 	
 	
 

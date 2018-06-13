@@ -28,6 +28,7 @@ import com.ats.wizzo.model.GetTouch;
 import com.ats.wizzo.model.LoginResponse;
 import com.ats.wizzo.model.LoginResponseAdmin;
 import com.ats.wizzo.model.Order;
+import com.ats.wizzo.model.Room;
 import com.ats.wizzo.model.Support;
 import com.ats.wizzo.model.User;
 import com.ats.wizzo.respository.AdminUserRepository;
@@ -892,5 +893,24 @@ public class MasterController {
 		}
 
 		return loginResponse;
+	}
+	
+	
+	@RequestMapping(value = { "/getRoomListByUsertId" }, method = RequestMethod.POST)
+	public @ResponseBody List<Room> getRoomListByUsertId(@RequestParam("userId") int userId) {
+
+		List<Room> empList = new ArrayList<Room>();
+
+		try {
+
+			empList = roomRepository.findByUserIdAndRoomIsUsed(userId,1);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return empList;
+
 	}
 }

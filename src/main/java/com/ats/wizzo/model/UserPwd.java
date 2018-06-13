@@ -11,16 +11,18 @@ public class UserPwd {
 
 	@Id
 	@GeneratedValue
-	private int uId;
+	private int userId;
 
 	private String userPassword;
 
-	public int getuId() {
-		return uId;
+	
+
+	public int getUserId() {
+		return userId;
 	}
 
-	public void setuId(int uId) {
-		this.uId = uId;
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
 
 	public String getUserPassword() {
@@ -33,7 +35,8 @@ public class UserPwd {
 
 	@Override
 	public String toString() {
-		return "UserPwd [uId=" + uId + ", userPassword=" + userPassword + "]";
+		return "UserPwd [userId=" + userId + ", userPassword=" + userPassword + "]";
 	}
 
+	
 }

@@ -28,9 +28,9 @@ import com.ats.wizzo.model.GetTouch;
 import com.ats.wizzo.model.LoginResponse;
 import com.ats.wizzo.model.LoginResponseAdmin;
 import com.ats.wizzo.model.Order;
-import com.ats.wizzo.model.Room;
 import com.ats.wizzo.model.Support;
 import com.ats.wizzo.model.User;
+import com.ats.wizzo.model.UserPwd;
 import com.ats.wizzo.respository.AdminUserRepository;
 import com.ats.wizzo.respository.BuyNowRepository;
 import com.ats.wizzo.respository.DeviceByUserIdRepository;
@@ -44,6 +44,7 @@ import com.ats.wizzo.respository.RoomRepository;
 import com.ats.wizzo.respository.ScanDeviceRepository;
 import com.ats.wizzo.respository.SchedulerRepository;
 import com.ats.wizzo.respository.SupportRepository;
+import com.ats.wizzo.respository.UserPwdRepository;
 import com.ats.wizzo.respository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,6 +53,9 @@ public class MasterController {
 
 	@Autowired
 	AdminUserRepository adminUserRepository;
+
+	@Autowired
+	UserPwdRepository userPwdRepository;
 
 	@Autowired
 	EnquiryRepository enquiryRepository;
@@ -91,8 +95,6 @@ public class MasterController {
 
 	@Autowired
 	GetTouchRepository getTouchRepository;
-
-	
 
 	// ----------------------------------------Enquiry------------------------------------
 
@@ -240,7 +242,7 @@ public class MasterController {
 		try {
 
 			buy = buyNowRepository.saveAndFlush(buyNow);
-			
+
 			ObjectMapper om = new ObjectMapper();
 			String jsonStr = om.writeValueAsString(buy);
 			if (buy == null) {
@@ -288,7 +290,7 @@ public class MasterController {
 		try {
 
 			touch = getTouchRepository.saveAndFlush(getTouch);
-			
+
 			ObjectMapper om = new ObjectMapper();
 			String jsonStr = om.writeValueAsString(touch);
 			if (touch == null) {
@@ -392,6 +394,24 @@ public class MasterController {
 
 	}
 
+	@RequestMapping(value = { "/saveUserPwd" }, method = RequestMethod.POST)
+	public @ResponseBody UserPwd saveUserPwd(@RequestBody UserPwd UserPwd) {
+
+		UserPwd userres = new UserPwd();
+
+		try {
+
+			userres = userPwdRepository.saveAndFlush(UserPwd);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return userres;
+
+	}
+
 	@RequestMapping(value = { "/getUserByMobileNo" }, method = RequestMethod.POST)
 	public @ResponseBody User getUserByMobileNo(@RequestParam("userMobile") String userMobile) {
 
@@ -399,6 +419,26 @@ public class MasterController {
 
 		try {
 			user = userRepository.findByUserMobile(userMobile);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return user;
+
+	}
+
+	@RequestMapping(value = { "/checkMobileNo" }, method = RequestMethod.POST)
+	public @ResponseBody User checkMobileNo(@RequestParam("userMobile") String userMobile) {
+
+		User user = new User();
+
+		try {
+			user = userRepository.findByUserMobile(userMobile);
+			if (user == null) {
+				user = new User();
+			}
 
 		} catch (Exception e) {
 
@@ -866,6 +906,31 @@ public class MasterController {
 
 	}
 
+	@RequestMapping(value = { "/userLogin" }, method = RequestMethod.POST)
+	public @ResponseBody ErrorMessage userLogin(@RequestParam("userMobile") String userMobile,
+			@RequestParam("userPassword") String userPassword) {
+
+		User user = userRepository.findByUserMobile(userMobile);
+
+		ErrorMessage loginResponse = new ErrorMessage();
+
+		if (user == null) {
+			user = new User();
+			loginResponse.setError(true);
+			loginResponse.setMessage("Invalid Mobile number");
+
+		} else {
+
+			loginResponse.setError(false);
+			loginResponse.setMessage("Login Successfully");
+			UserPwd userPwd = new UserPwd();
+			userPwd = userPwdRepository.findByUserPassword(userPassword);
+
+		}
+
+		return loginResponse;
+	}
+
 	@RequestMapping(value = { "/adminUserLogin" }, method = RequestMethod.POST)
 	public @ResponseBody LoginResponseAdmin findByUserMobileAndUserPassword(
 			@RequestParam("userMobile") String userMobile, @RequestParam("userPassword") String userPassword,
@@ -894,23 +959,5 @@ public class MasterController {
 
 		return loginResponse;
 	}
-	
-	
-	@RequestMapping(value = { "/getRoomListByUsertId" }, method = RequestMethod.POST)
-	public @ResponseBody List<Room> getRoomListByUsertId(@RequestParam("userId") int userId) {
 
-		List<Room> empList = new ArrayList<Room>();
-
-		try {
-
-			empList = roomRepository.findByUserIdAndRoomIsUsed(userId,1);
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-
-		}
-		return empList;
-
-	}
 }

@@ -6,4 +6,6 @@ import com.ats.wizzo.model.UserPwd;
 
 public interface UserPwdRepository extends JpaRepository<UserPwd, Integer> {
 
+	UserPwd findByUserPassword(String userPassword);
+
 }

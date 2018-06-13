@@ -27,10 +27,12 @@ import com.ats.wizzo.model.GetSupportList;
 import com.ats.wizzo.model.GetTouch;
 import com.ats.wizzo.model.LoginResponse;
 import com.ats.wizzo.model.LoginResponseAdmin;
+import com.ats.wizzo.model.LoginResponseUser;
 import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Room;
 import com.ats.wizzo.model.Support;
 import com.ats.wizzo.model.User;
+import com.ats.wizzo.model.UserPassword;
 import com.ats.wizzo.model.UserPwd;
 import com.ats.wizzo.respository.AdminUserRepository;
 import com.ats.wizzo.respository.BuyNowRepository;
@@ -45,6 +47,7 @@ import com.ats.wizzo.respository.RoomRepository;
 import com.ats.wizzo.respository.ScanDeviceRepository;
 import com.ats.wizzo.respository.SchedulerRepository;
 import com.ats.wizzo.respository.SupportRepository;
+import com.ats.wizzo.respository.UserPasswordRepository;
 import com.ats.wizzo.respository.UserPwdRepository;
 import com.ats.wizzo.respository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,6 +66,9 @@ public class MasterController {
 
 	@Autowired
 	BuyNowRepository buyNowRepository;
+
+	@Autowired
+	UserPasswordRepository userPasswordRepository;
 
 	@Autowired
 	OrderRepository orderRepository;
@@ -908,24 +914,24 @@ public class MasterController {
 	}
 
 	@RequestMapping(value = { "/userLogin" }, method = RequestMethod.POST)
-	public @ResponseBody ErrorMessage userLogin(@RequestParam("userMobile") String userMobile,
+	public @ResponseBody LoginResponseUser userLogin(@RequestParam("userMobile") String userMobile,
 			@RequestParam("userPassword") String userPassword) {
 
-		User user = userRepository.findByUserMobile(userMobile);
+		UserPassword userPasswordRes = userPasswordRepository.findByUserMobileAndUserPassword(userMobile, userPassword);
+		LoginResponseUser loginResponse = new LoginResponseUser();
 
-		ErrorMessage loginResponse = new ErrorMessage();
+		if (userPasswordRes == null) {
+			userPasswordRes = new UserPassword();
+			loginResponse.setUserPassword(userPasswordRes);
 
-		if (user == null) {
-			user = new User();
 			loginResponse.setError(true);
-			loginResponse.setMessage("Invalid Mobile number");
+			loginResponse.setMsg("Invalid Login Details ");
 
 		} else {
 
+			loginResponse.setUserPassword(userPasswordRes);
 			loginResponse.setError(false);
-			loginResponse.setMessage("Login Successfully");
-			UserPwd userPwd = new UserPwd();
-			userPwd = userPwdRepository.findByUserPassword(userPassword);
+			loginResponse.setMsg("Login Successfully");
 
 		}
 
@@ -960,7 +966,7 @@ public class MasterController {
 
 		return loginResponse;
 	}
-	
+
 	@RequestMapping(value = { "/getRoomListByUsertId" }, method = RequestMethod.POST)
 	public @ResponseBody List<Room> getRoomListByUsertId(@RequestParam("userId") int userId) {
 
@@ -968,7 +974,7 @@ public class MasterController {
 
 		try {
 
-			empList = roomRepository.findByUserIdAndRoomIsUsed(userId,1);
+			empList = roomRepository.findByUserIdAndRoomIsUsed(userId, 1);
 
 		} catch (Exception e) {
 

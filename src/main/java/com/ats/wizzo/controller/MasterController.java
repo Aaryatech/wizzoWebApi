@@ -104,7 +104,7 @@ public class MasterController {
 
 	@Autowired
 	GetTouchRepository getTouchRepository;
-	
+
 	@Autowired
 	TotalRoomRepository totalRoomRepository;
 
@@ -412,7 +412,7 @@ public class MasterController {
 		UserPwd userres = new UserPwd();
 
 		try {
-System.out.println(UserPwd);
+			System.out.println(UserPwd);
 			userres = userPwdRepository.saveAndFlush(UserPwd);
 
 		} catch (Exception e) {
@@ -421,6 +421,23 @@ System.out.println(UserPwd);
 
 		}
 		return userres;
+
+	}
+
+	@RequestMapping(value = { "/getDataByUserId" }, method = RequestMethod.POST)
+	public @ResponseBody UserPwd getDataByUserId(@RequestParam("userId") int userId) {
+
+		UserPwd user = new UserPwd();
+
+		try {
+			user = userPwdRepository.findByUserId(userId);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return user;
 
 	}
 
@@ -979,11 +996,10 @@ System.out.println(UserPwd);
 
 		try {
 
-			roomList = totalRoomRepository.findByUserIdAndRoomIsUsed(userId,1);
-			
-			for(int i=0;i<roomList.size();i++)
-			{
-				List<Device> switchList = deviceRepository.findByRoomIdAndDevIsUsed(roomList.get(i).getRoomId(),1);
+			roomList = totalRoomRepository.findByUserIdAndRoomIsUsed(userId, 1);
+
+			for (int i = 0; i < roomList.size(); i++) {
+				List<Device> switchList = deviceRepository.findByRoomIdAndDevIsUsed(roomList.get(i).getRoomId(), 1);
 				roomList.get(i).setDeviceList(switchList);
 			}
 

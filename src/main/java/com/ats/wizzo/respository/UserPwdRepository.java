@@ -8,4 +8,6 @@ public interface UserPwdRepository extends JpaRepository<UserPwd, Integer> {
 
 	UserPwd findByUserPassword(String userPassword);
 
+	UserPwd findByUserId(int userId);
+
 }

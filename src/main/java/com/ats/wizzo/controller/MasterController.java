@@ -31,6 +31,7 @@ import com.ats.wizzo.model.LoginResponseUser;
 import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Room;
 import com.ats.wizzo.model.Support;
+import com.ats.wizzo.model.TotalRoom;
 import com.ats.wizzo.model.User;
 import com.ats.wizzo.model.UserPassword;
 import com.ats.wizzo.model.UserPwd;
@@ -47,6 +48,7 @@ import com.ats.wizzo.respository.RoomRepository;
 import com.ats.wizzo.respository.ScanDeviceRepository;
 import com.ats.wizzo.respository.SchedulerRepository;
 import com.ats.wizzo.respository.SupportRepository;
+import com.ats.wizzo.respository.TotalRoomRepository;
 import com.ats.wizzo.respository.UserPasswordRepository;
 import com.ats.wizzo.respository.UserPwdRepository;
 import com.ats.wizzo.respository.UserRepository;
@@ -102,6 +104,9 @@ public class MasterController {
 
 	@Autowired
 	GetTouchRepository getTouchRepository;
+	
+	@Autowired
+	TotalRoomRepository totalRoomRepository;
 
 	// ----------------------------------------Enquiry------------------------------------
 
@@ -968,20 +973,26 @@ System.out.println(UserPwd);
 	}
 
 	@RequestMapping(value = { "/getRoomListByUsertId" }, method = RequestMethod.POST)
-	public @ResponseBody List<Room> getRoomListByUsertId(@RequestParam("userId") int userId) {
+	public @ResponseBody List<TotalRoom> getRoomListByUsertId(@RequestParam("userId") int userId) {
 
-		List<Room> empList = new ArrayList<Room>();
+		List<TotalRoom> roomList = new ArrayList<TotalRoom>();
 
 		try {
 
-			empList = roomRepository.findByUserIdAndRoomIsUsed(userId, 1);
+			roomList = totalRoomRepository.findByUserIdAndRoomIsUsed(userId,1);
+			
+			for(int i=0;i<roomList.size();i++)
+			{
+				List<Device> switchList = deviceRepository.findByRoomIdAndDevIsUsed(roomList.get(i).getRoomId(),1);
+				roomList.get(i).setDeviceList(switchList);
+			}
 
 		} catch (Exception e) {
 
 			e.printStackTrace();
 
 		}
-		return empList;
+		return roomList;
 
 	}
 

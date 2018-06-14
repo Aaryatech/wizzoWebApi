@@ -27,4 +27,6 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
 	@Query(value = " SELECT COUNT(m_device.dev_id) FROM m_device WHERE m_device.dev_is_used=1" + "", nativeQuery = true)
 	Integer totalCountOfUsers();
 
+	List<Device> findByRoomIdAndDevIsUsed(int roomId, int i);
+
 }

@@ -431,6 +431,10 @@ public class MasterController {
 
 		try {
 			user = userPwdRepository.findByUserId(userId);
+			if(user==null)
+			{
+				user = new UserPwd();
+			}
 
 		} catch (Exception e) {
 

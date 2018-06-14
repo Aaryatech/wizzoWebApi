@@ -407,7 +407,7 @@ public class MasterController {
 		UserPwd userres = new UserPwd();
 
 		try {
-
+System.out.println(UserPwd);
 			userres = userPwdRepository.saveAndFlush(UserPwd);
 
 		} catch (Exception e) {

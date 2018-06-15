@@ -4,7 +4,9 @@ import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,7 @@ import com.ats.wizzo.model.LoginResponseAdmin;
 import com.ats.wizzo.model.LoginResponseUser;
 import com.ats.wizzo.model.Order;
 import com.ats.wizzo.model.Room;
+import com.ats.wizzo.model.Scheduler;
 import com.ats.wizzo.model.Support;
 import com.ats.wizzo.model.TotalRoom;
 import com.ats.wizzo.model.User;
@@ -1014,6 +1017,28 @@ public class MasterController {
 		}
 		return roomList;
 
+	}
+	
+	
+	@RequestMapping(value = "/setNewScheduler", method = RequestMethod.POST)
+	public List<Scheduler> setNewScheduler(@RequestBody List<Scheduler> schedulerList) {
+
+		// System.out.println("scheduler List " + scheduler.toString());
+ 
+
+		List<Scheduler> resScheduler = new ArrayList<Scheduler>();
+		try {
+			System.out.println(schedulerList);
+			resScheduler = schedulerRepository.save(schedulerList);
+		}catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		
+		 
+
+		return resScheduler;
 	}
 
 }

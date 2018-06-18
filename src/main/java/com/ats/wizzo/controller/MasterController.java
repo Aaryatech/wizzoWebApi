@@ -1021,15 +1021,27 @@ public class MasterController {
 	
 	
 	@RequestMapping(value = "/setNewScheduler", method = RequestMethod.POST)
-	public List<Scheduler> setNewScheduler(@RequestBody List<Scheduler> schedulerList) {
+	public ErrorMessage setNewScheduler(@RequestBody List<Scheduler> schedulerList) {
 
 		// System.out.println("scheduler List " + scheduler.toString());
  
 
-		List<Scheduler> resScheduler = new ArrayList<Scheduler>();
+		ErrorMessage errorMessage = new ErrorMessage();
 		try {
 			System.out.println(schedulerList);
-			resScheduler = schedulerRepository.save(schedulerList);
+			List<Scheduler> resScheduler = schedulerRepository.save(schedulerList);
+			
+			if(resScheduler==null)
+			{
+				errorMessage.setError(true);
+				errorMessage.setMessage("failed to set scheduler ");
+			}
+			else 
+			{
+				errorMessage.setError(false);
+				errorMessage.setMessage("set scheduler");
+			}
+			
 		}catch(Exception e)
 		{
 			e.printStackTrace();
@@ -1038,7 +1050,7 @@ public class MasterController {
 		
 		 
 
-		return resScheduler;
+		return errorMessage;
 	}
 
 }

@@ -1019,6 +1019,25 @@ public class MasterController {
 
 	}
 	
+	@RequestMapping(value = { "/macAddByUserId" }, method = RequestMethod.POST)
+	public @ResponseBody List<Device> macAddByUserId(@RequestParam("userId") int userId) {
+
+		List<Device> macList = new ArrayList<Device>();
+
+		try {
+
+			macList = deviceRepository.macAddByUserId(userId, 1);
+ 
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+		}
+		return macList;
+
+	}
+	
 	
 	@RequestMapping(value = "/setNewScheduler", method = RequestMethod.POST)
 	public ErrorMessage setNewScheduler(@RequestBody List<Scheduler> schedulerList) {

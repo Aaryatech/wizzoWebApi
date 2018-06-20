@@ -29,4 +29,7 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
 
 	List<Device> findByRoomIdAndDevIsUsed(int roomId, int i);
 
+	@Query(value = " select * from m_device where user_id =:userId and dev_is_used=:isUsed group by dev_mac", nativeQuery = true)
+	List<Device> macAddByUserId(@Param("userId")int userId,@Param("isUsed") int isUsed);
+
 }
